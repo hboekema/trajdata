@@ -280,11 +280,11 @@ def compute_info(path, sample_coeff=0.25):
 
         # remove outliers before computing final statistics
         print('Removing outliers...')
-        med = np.median(all_states, axis=0, keepdims=True)
+        med = np.nanmedian(all_states, axis=0, keepdims=True)
         d = np.abs(all_states - med)
-        mdev = np.std(all_states, axis=0, keepdims=True)
+        mdev = np.nanstd(all_states, axis=0, keepdims=True)
         s = d / mdev
-        dev_thresh = 4.0
+        dev_thresh = 3.0
         chosen = s > dev_thresh
         all_states[chosen] = np.nan # reject outide of N deviations from median
         print('after outlier removal:')
@@ -321,10 +321,10 @@ if __name__ == "__main__":
     keys_to_compute = ['ego_fut', 'ego_hist']
     hist_sec = 3.0 # 1.0
     fut_sec = 5.2 # 2.0
-    steps = 50000
+    steps = 100000
     agent_types = [AgentType.VEHICLE] # [AgentType.PEDESTRIAN] # [AgentType.VEHICLE]
     
     main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_sec, fut_sec, steps=steps, agent_types=agent_types)
     
     # path = 'examples/traj_data_nuplan_mini.npz'
-    # compute_info(path)
+    # compute_info(path, sample_coeff=1.0)

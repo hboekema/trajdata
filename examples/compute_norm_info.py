@@ -123,7 +123,7 @@ def main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_s
         fut_pos, fut_yaw, _, fut_mask = trajdata2posyawspeed(future_traj, nan_to_zero=False)
 
         traj_state = torch.cat(
-                (fut_pos, fut_yaw), dim=2)
+                (fut_pos, fut_yaw), dim=-1)
 
         traj_state_and_action = convert_state_to_state_and_action(traj_state, curr_speed, dt).reshape((-1, 6))
 

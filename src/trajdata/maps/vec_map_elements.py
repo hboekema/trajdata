@@ -88,8 +88,10 @@ class Polyline:
 
         # 1. Compute projections of each point to each line segment in a
         #    batched manner.
-        line_seg_diffs: np.ndarray = p1 - p0
-        point_seg_diffs: np.ndarray = xyz - p0
+        # add eps to avoid division by zero warning when z axis is not used (i.e., set to 0)
+        eps = 1e-12
+        line_seg_diffs: np.ndarray = p1 - p0 + eps
+        point_seg_diffs: np.ndarray = xyz - p0 + eps
 
         dot_products: np.ndarray = (point_seg_diffs * line_seg_diffs).sum(
             axis=-1, keepdims=True

@@ -92,16 +92,11 @@ class SimulationDataFrameCache(DataFrameCache, SimulationCache):
             sim_dict["agent_id"].append(agent)
             sim_dict["scene_ts"].append(self.scene_ts)
 
-            old_x, old_y, old_z = prev_state.position3d
+            old_x, old_y = prev_state.position
             new_x, new_y = new_xyzh.position
 
             sim_dict["x"].append(new_x)
             sim_dict["y"].append(new_y)
-            # TBD: hack: if new_z is nan, use old_z
-            if "z" in new_xyzh._format_dict and not np.any(np.isnan(new_xyzh.get_attr("z"))):
-                sim_dict["z"].append(new_xyzh.get_attr("z"))
-            else:
-                sim_dict["z"].append(old_z)
 
             vx: float = (new_x - old_x) / self.scene.dt
             vy: float = (new_y - old_y) / self.scene.dt

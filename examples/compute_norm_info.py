@@ -43,6 +43,8 @@ def main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_s
             incl_robot_future=False,
             incl_raster_map=False,
             raster_map_params={"px_per_m": 2, "map_size_px": 224, "offset_frac_xy": (-0.5, 0.0)},
+            state_format="x,y,xd,yd,xdd,ydd,h",
+            obs_format="x,y,xd,yd,xdd,ydd,s,c",
             # augmentations=[noise_hists],
             data_dirs={
                 "nusc_trainval": "../behavior-generation-dataset/nuscenes",
@@ -158,7 +160,6 @@ def main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_s
 
 def trajdata2posyawspeed(state, nan_to_zero=True):
     """Converts trajdata's state format to pos, yaw, and speed. Set Nans to 0s"""
-    
     if state.shape[-1] == 7:  # x, y, vx, vy, ax, ay, sin(heading), cos(heading)
         state = torch.cat((state[...,:6],torch.sin(state[...,6:7]),torch.cos(state[...,6:7])),-1)
     else:
@@ -312,15 +313,15 @@ def compute_info(path, sample_coeff=0.25):
 
 if __name__ == "__main__":
     # 'nusc_trainval', 'lyft_train', 'lyft_sample', 'nuplan_mini'
-    dataset_to_use = 'nuplan_mini' # 'nusc_trainval' # 'lyft_train'
+    dataset_to_use = 'nusc_trainval' # 'nuplan_mini' # 'nusc_trainval' # 'lyft_train'
     # 'unified', 'l5kit'
     dataset_loader_to_use = 'unified'
     # "scene", "agent"
-    centric = "scene"
+    centric = "agent"
     # subset of ['ego_fut', 'ego_hist', 'neighbor_hist']
     keys_to_compute = ['ego_fut', 'ego_hist']
-    hist_sec = 1.0 # 1.0, 3.0
-    fut_sec = 2.0 # 2.0, 5.2
+    hist_sec = 3.0 # 1.0, 3.0
+    fut_sec = 5.2 # 2.0, 5.2
     steps = 200000
     agent_types = [AgentType.VEHICLE] # [AgentType.PEDESTRIAN] # [AgentType.VEHICLE]
     

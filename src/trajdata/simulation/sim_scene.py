@@ -121,6 +121,8 @@ class SimulationScene:
         self, collate: bool = True, get_map: bool = True
     ) -> Union[AgentBatch, Dict[str, Any]]:
         agent_data_list: List[AgentBatchElement] = list()
+        self.cache.set_obs_format(self.dataset.obs_format)
+        
         for agent in self.agents:
             scene_time_agent = SceneTimeAgent(
                 self.scene, self.scene_ts, self.agents, agent, self.cache

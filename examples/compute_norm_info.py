@@ -154,7 +154,7 @@ def main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_s
 
     
     compile_data = {state_name:np.concatenate(state_list, axis=0) for state_name, state_list in compile_data.items()}
-    path = 'examples/traj_data_'+dataset_to_use
+    path = 'examples/traj_data_'+dataset_to_use+'_'+centric+'_'+str(hist_sec)+'_'+str(fut_sec)
     np.savez(path, **compile_data)
     print('data saved at', path)
 
@@ -319,13 +319,13 @@ if __name__ == "__main__":
     # "scene", "agent"
     centric = "agent"
     # subset of ['ego_fut', 'ego_hist', 'neighbor_hist']
-    keys_to_compute = ['ego_fut', 'ego_hist']
-    hist_sec = 3.0 # 1.0, 3.0
-    fut_sec = 5.2 # 2.0, 5.2
+    keys_to_compute = ['ego_fut', 'ego_hist', 'neighbor_hist']
+    hist_sec = 3.0 # 1.0, 3.0, 3.0
+    fut_sec = 14.0 # 2.0, 5.2, 14.0
     steps = 200000
     agent_types = [AgentType.VEHICLE] # [AgentType.PEDESTRIAN] # [AgentType.VEHICLE]
     
     main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_sec, fut_sec, steps=steps, agent_types=agent_types)
     
-    path = 'examples/traj_data_nuplan_mini.npz'
-    compute_info(path, sample_coeff=1.0)
+    # path = 'examples/traj_data_nuplan_mini.npz'
+    # compute_info(path, sample_coeff=1.0)

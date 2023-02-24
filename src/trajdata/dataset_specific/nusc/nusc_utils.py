@@ -262,8 +262,9 @@ def agg_ego_data(nusc_obj: NuScenes, scene: Scene) -> Agent:
 def extract_lane_center(nusc_map: NuScenesMap, lane_record) -> np.ndarray:
     # Getting the lane center's points.
     curr_lane = nusc_map.arcline_path_3.get(lane_record["token"], [])
+    # TBD: temporarily change resolution_meters from 0.5 to 2.0. Need to add this as a parameter into vector_map_params.
     lane_midline: np.ndarray = np.array(
-        arcline_path_utils.discretize_lane(curr_lane, resolution_meters=0.5)
+        arcline_path_utils.discretize_lane(curr_lane, resolution_meters=2.0)
     )[:, :2]
 
     # For some reason, nuScenes duplicates a few entries

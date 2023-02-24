@@ -470,6 +470,7 @@ class SceneBatchElement:
         # sort the agents based on their distance to the centered agent
         idx = np.argsort(agent_distances)
         num_qualified = nearby_mask.sum()
+        # BUG: this can be a bug when different types of agents have different distance limits
         nearby_agents: List[AgentMetadata] = [
             scene_time.agents[idx[i]] for i in range(num_qualified)
         ]

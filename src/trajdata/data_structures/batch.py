@@ -27,6 +27,7 @@ class AgentBatch:
     agent_fut_extent: Tensor
     agent_fut_len: Tensor
     num_neigh: Tensor
+    neigh_indices: Tensor
     neigh_types: Tensor
     neigh_hist: StateTensor
     neigh_hist_extents: Tensor
@@ -56,6 +57,7 @@ class AgentBatch:
             "neigh_hist_len",
             "neigh_fut_len",
             "neigh_types",
+            "neigh_indices",
             "num_neigh",
             "robot_fut_len",
             "map_names",
@@ -123,6 +125,7 @@ class AgentBatch:
             agent_fut_extent=_filter(self.agent_fut_extent),
             agent_fut_len=_filter(self.agent_fut_len),
             num_neigh=_filter(self.num_neigh),
+            neigh_indices=_filter(self.neigh_indices),
             neigh_types=_filter(self.neigh_types),
             neigh_hist=_filter(self.neigh_hist),
             neigh_hist_extents=_filter(self.neigh_hist_extents),
@@ -331,6 +334,7 @@ class SceneBatch:
             agent_fut_len=index_agent(self.agent_fut_len),
             num_neigh=self.num_agents - 1,
             neigh_types=index_neighbors(self.agent_type),
+            neigh_indices=index_neighbors(self.agent_indices),
             neigh_hist=index_neighbors(self.agent_hist),
             neigh_hist_extents=index_neighbors(self.agent_hist_extent),
             neigh_hist_len=index_neighbors(self.agent_hist_len),

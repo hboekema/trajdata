@@ -100,7 +100,7 @@ class AgentBatchElement:
                 ]
             )
 
-        nearby_agents, self.neighbor_types_np = self.get_nearby_agents(
+        nearby_agents, self.neighbor_types_np, self.neighbor_indices_np = self.get_nearby_agents(
             scene_time_agent, agent_info, distance_limit
         )
 
@@ -204,16 +204,24 @@ class AgentBatchElement:
         nearby_agents: List[AgentMetadata] = [
             scene_time.agents[idx] for idx in nb_idx if nearby_mask[idx]
         ]
+        neighbor_indices = []
+        for idx in nb_idx:
+            if nearby_mask[idx]:
+                neighbor_indices.append(idx)
+        neighbor_indices_np = np.array(neighbor_indices)
 
         if self.max_neighbor_num is not None:
             # Pruning nearby_agents and re-creating
             # neighbor_types_np with the remaining agents.
             nearby_agents = nearby_agents[: self.max_neighbor_num]
+            neighbor_indices_np = neighbor_indices_np[: self.max_neighbor_num]
 
         # Doing this here because the argsort above changes the order of agents.
         neighbor_types_np: np.ndarray = np.array([a.type.value for a in nearby_agents])
 
-        return nearby_agents, neighbor_types_np
+        for i, idx in enumerate(neighbor_indices_np):
+            assert np.all(scene_time.agents[idx].name==nearby_agents[i].name), "neighbor_indices_np is not correct"
+        return nearby_agents, neighbor_types_np, neighbor_indices_np
 
     def get_neighbor_history(
         self,

@@ -204,11 +204,7 @@ class AgentBatchElement:
         nearby_agents: List[AgentMetadata] = [
             scene_time.agents[idx] for idx in nb_idx if nearby_mask[idx]
         ]
-        neighbor_indices = []
-        for idx in nb_idx:
-            if nearby_mask[idx]:
-                neighbor_indices.append(idx)
-        neighbor_indices_np = np.array(neighbor_indices)
+        neighbor_indices_np = np.array([idx for idx in nb_idx if nearby_mask[idx]])
 
         if self.max_neighbor_num is not None:
             # Pruning nearby_agents and re-creating

@@ -369,6 +369,7 @@ def plot_scene_batch(
     batch: SceneBatch,
     batch_idx: int,
     ax: Optional[Axes] = None,
+    legend: bool = True,
     show: bool = True,
     close: bool = True,
 ) -> None:
@@ -446,13 +447,17 @@ def plot_scene_batch(
 
     ax.grid(False)
     ax.set_aspect("equal", adjustable="box")
-    ax.legend(loc="best", frameon=True)
 
     # Doing this because the imshow above makes the map origin at the top.
     ax.invert_yaxis()
+
+    if legend:
+        ax.legend(loc="best", frameon=True)
 
     if show:
         plt.show()
 
     if close:
         plt.close()
+    
+    return ax

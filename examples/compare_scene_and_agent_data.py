@@ -9,6 +9,7 @@ import torch
 from collections import defaultdict
 from tbsim.utils.trajdata_utils import get_closest_lane_point
 import matplotlib.pyplot as plt
+from dataclasses import asdict
 
 def main(dataset_to_use, hist_sec = 1.0, fut_sec = 2.0, agent_types = [AgentType.VEHICLE]):
     dt = 0.1
@@ -23,7 +24,6 @@ def main(dataset_to_use, hist_sec = 1.0, fut_sec = 2.0, agent_types = [AgentType
         "rgb_idx_groups": ([0], [1], [2]),
         "pixel_size": 1.0 / 2.0,
         "raster_size": 224,
-        "pixel_size": 0.5,
         "ego_center": (-0.5, 0.0),
         "no_map_fill_value": -1.0,
     }
@@ -124,53 +124,22 @@ def main(dataset_to_use, hist_sec = 1.0, fut_sec = 2.0, agent_types = [AgentType
     for i, (batch_scene, batch_agent) in enumerate(zip(dataloader_scene, dataloader_agent)):
         
         from tbsim.utils.trajdata_utils import plot_agent_batch_dict
-        from trajdata.visualization.vis import plot_agent_batch, plot_agent_batch_all, plot_scene_batch
-        from dataclasses import asdict
+        # from trajdata.visualization.vis import plot_agent_batch, plot_agent_batch_all, plot_scene_batch
         
-        # plot_agent_batch_all(batch_agent)
-        # ax = plot_scene_batch(batch_scene, batch_idx=0, legend=False, show=False, close=False)
-
-        # ax = plot_agent_batch(
-        #     batch_agent, batch_idx=3, legend=False, show=False, close=False
-        # )
+        # ax = plot_agent_batch(batch_agent, batch_idx=3, legend=False, show=False, close=False)
         # plt.show()
         # raise
-
-        
-        
-        # def plot_vec_map_lanes(ax, batch):
-        #     lanes = batch.extras["closest_lane_point"][0]
-        #     for i, lane_points in enumerate(lanes[:50]):
-        #         lane_points = lane_points[
-        #             torch.logical_not(torch.any(torch.isnan(lane_points), dim=1)), :
-        #         ].numpy()
-
-        #         ax.plot(
-        #             lane_points[:, 0],
-        #             lane_points[:, 1],
-        #             "o-",
-        #             markersize=3,
-        #             label="Lane points"+str(i),
-        #         )
-
-        #         ax.legend(loc="best", frameon=True)
-
-        #     plt.show()
-        
-        # plot_vec_map_lanes(ax, batch_scene)
-        
-
 
         batch_agent = asdict(batch_agent)
         batch_scene = asdict(batch_scene)
 
-        batch_scene_parsed = parse_trajdata_batch(batch_scene)
+        batch_scene_parsed = parse_trajdata_batch(batch_scene, overwrite_nan=True)
         batch_scene_agent_coord = convert_scene_data_to_agent_coordinates(batch_scene_parsed, merge_BM=True, max_neighbor_num=max_neighbor_num, max_neighbor_dist=max_neighbor_dist)
 
-        batch_agent_parsed = parse_trajdata_batch(batch_agent)
+        batch_agent_parsed = parse_trajdata_batch(batch_agent, overwrite_nan=True)
         
         
-        # ax2 = plot_agent_batch_dict(batch_agent_parsed, batch_idx=3, legend=False, show=False, close=False)
+        # ax2 = plot_agent_batch_dict(batch_agent_parsed, batch_idx=5, legend=False, show=False, close=False)
         # plt.show()
         # raise
 
@@ -205,7 +174,7 @@ def main(dataset_to_use, hist_sec = 1.0, fut_sec = 2.0, agent_types = [AgentType
             else:
                 batch_scene_agent_coord_selected[k] = np.array(v)[included_inds]
 
-        # ax3 = plot_agent_batch_dict(batch_scene_agent_coord_selected, batch_idx=3, legend=False, show=False, close=False)
+        # ax3 = plot_agent_batch_dict(batch_scene_agent_coord_selected, batch_idx=5, legend=False, show=False, close=False)
         # plt.show()
         # raise
         
@@ -217,14 +186,8 @@ def main(dataset_to_use, hist_sec = 1.0, fut_sec = 2.0, agent_types = [AgentType
             batch_scene_agent_coord_selected[k] = batch_scene_agent_coord_selected[k][:, :max_len]
             # print(k, batch_scene_agent_coord_selected[k].shape)
 
-
-        # print('batch_agent_parsed["all_other_agents_extents"].shape', batch_agent_parsed['all_other_agents_extents'].shape)
-        # print('batch_scene_agent_coord_selected["all_other_agents_extents"].shape', batch_scene_agent_coord_selected['all_other_agents_extents'].shape)
-        check_consistency(prep_keywords, batch_agent_parsed, batch_scene_agent_coord_selected)
-        check_consistency(major_keywords, batch_agent_parsed, batch_scene_agent_coord_selected)
-
-        # print('batch_scene.keys()', batch_scene.keys())
-        # print('batch_agent.keys()', batch_agent.keys())
+        check_consistency(prep_keywords, batch_scene_agent_coord_selected, batch_agent_parsed)
+        check_consistency(major_keywords, batch_scene_agent_coord_selected, batch_agent_parsed)
         
         # print('batch_scene.num_agents', batch_scene['num_agents'])
         # print("batch_scene['scene_ts']", batch_scene['scene_ts'])
@@ -235,7 +198,6 @@ def main(dataset_to_use, hist_sec = 1.0, fut_sec = 2.0, agent_types = [AgentType
         # print('batch_agent.agent_fut.shape', batch_agent['agent_fut'].shape)
         # print('batch_agent.neigh_fut.shape', batch_agent['neigh_fut'].shape)
         
-        raise
 
 if __name__ == "__main__":
     # 'nusc_trainval', 'lyft_train', 'lyft_sample', 'nuplan_mini'

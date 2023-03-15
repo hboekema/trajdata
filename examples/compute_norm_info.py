@@ -16,14 +16,8 @@ import os
 def main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_sec = 1.0, fut_sec = 2.0, steps = None, agent_types = [AgentType.VEHICLE]):
     dt = 0.1
 
-    # if "nusc" in dataset_to_use:
-    #     interaction_d = 30
-    # elif "lyft" in dataset_to_use:
-    #     interaction_d = 50
-    # elif "nuplan" in dataset_to_use:
-    #     interaction_d = 30
-    # else:
-    #     raise
+    # distance to scene ego to be included. [30, np.inf]
+    interaction_d = np.inf
 
     if centric == 'scene':
         dataloader_batch_size = 2
@@ -39,7 +33,7 @@ def main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_s
             future_sec=(fut_sec, fut_sec), # This should be consistent with the horizon diffusion model uses
             only_types=agent_types,
             only_predict=agent_types,
-            # agent_interaction_distances=defaultdict(lambda: interaction_d),
+            agent_interaction_distances=defaultdict(lambda: interaction_d),
             incl_robot_future=False,
             incl_raster_map=False,
             raster_map_params={"px_per_m": 2, "map_size_px": 224, "offset_frac_xy": (-0.5, 0.0)},
@@ -59,7 +53,8 @@ def main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_s
             rebuild_cache=False,
             rebuild_maps=False,
             standardize_data=True,
-            max_agent_num=21
+            max_agent_num=21, # scene-centric
+            max_neighbor_num=None, # agent-centric
         )
         print(f"# Data Samples: {len(dataset):,}")
 
@@ -322,11 +317,11 @@ if __name__ == "__main__":
     # subset of ['ego_fut', 'ego_hist', 'neighbor_hist']
     keys_to_compute = ['ego_fut', 'ego_hist', 'neighbor_hist']
     hist_sec = 3.0 # 1.0, 3.0, 3.0
-    fut_sec = 14.0 # 2.0, 5.2, 14.0
+    fut_sec = 5.2 # 2.0, 5.2, 14.0
     steps = 200000
     agent_types = [AgentType.VEHICLE] # [AgentType.PEDESTRIAN] # [AgentType.VEHICLE]
     
     main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_sec, fut_sec, steps=steps, agent_types=agent_types)
     
-    # path = 'examples/traj_data_nuplan_mini.npz'
+    # path = 'examples/traj_data_nusc_trainval.npz'
     # compute_info(path, sample_coeff=1.0)

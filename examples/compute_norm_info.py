@@ -322,7 +322,7 @@ if __name__ == "__main__":
     steps = 50000
     agent_types = [AgentType.VEHICLE] # [AgentType.PEDESTRIAN] # [AgentType.VEHICLE]
     
-    main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_sec, fut_sec, steps=steps, agent_types=agent_types)
+    # main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_sec, fut_sec, steps=steps, agent_types=agent_types)
     
-    # path = 'examples/traj_data_nusc_trainval.npz'
-    # compute_info(path, sample_coeff=1.0)
+    path = 'examples/traj_data_nusc_trainval_agent_3.0_5.2.npz'
+    compute_info(path, sample_coeff=1.0)

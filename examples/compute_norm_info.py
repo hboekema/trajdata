@@ -16,8 +16,9 @@ import os
 def main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_sec = 1.0, fut_sec = 2.0, steps = None, agent_types = [AgentType.VEHICLE]):
     dt = 0.1
 
-    # distance to scene ego to be included. [30, np.inf]
-    interaction_d = np.inf
+    interaction_d = 30 # distance to scene ego to be included. [30, np.inf]
+    max_agent_num = None # scene-centric
+    max_neighbor_num = None # agent-centric
 
     if centric == 'scene':
         dataloader_batch_size = 2
@@ -53,8 +54,8 @@ def main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_s
             rebuild_cache=False,
             rebuild_maps=False,
             standardize_data=True,
-            max_agent_num=21, # scene-centric
-            max_neighbor_num=None, # agent-centric
+            max_agent_num=max_agent_num, 
+            max_neighbor_num=max_neighbor_num, 
         )
         print(f"# Data Samples: {len(dataset):,}")
 
@@ -318,7 +319,7 @@ if __name__ == "__main__":
     keys_to_compute = ['ego_fut', 'ego_hist', 'neighbor_hist']
     hist_sec = 3.0 # 1.0, 3.0, 3.0
     fut_sec = 5.2 # 2.0, 5.2, 14.0
-    steps = 200000
+    steps = 50000
     agent_types = [AgentType.VEHICLE] # [AgentType.PEDESTRIAN] # [AgentType.VEHICLE]
     
     main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_sec, fut_sec, steps=steps, agent_types=agent_types)

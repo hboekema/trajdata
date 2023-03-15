@@ -5,7 +5,7 @@ from tqdm import tqdm
 from typing import Union
 
 from trajdata import AgentBatch, SceneBatch, AgentType, UnifiedDataset
-from trajdata.visualization.vis import plot_agent_batch
+from trajdata.utils.arr_utils import angle_wrap
 
 import numpy as np
 import torch
@@ -160,12 +160,13 @@ def main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_s
 
 def trajdata2posyawspeed(state, nan_to_zero=True):
     """Converts trajdata's state format to pos, yaw, and speed. Set Nans to 0s"""
+    
     if state.shape[-1] == 7:  # x, y, vx, vy, ax, ay, sin(heading), cos(heading)
         state = torch.cat((state[...,:6],torch.sin(state[...,6:7]),torch.cos(state[...,6:7])),-1)
     else:
         assert state.shape[-1] == 8
     pos = state[..., :2]
-    yaw = torch.atan2(state[..., [-2]], state[..., [-1]])
+    yaw = angle_wrap(torch.atan2(state[..., [-2]], state[..., [-1]]))
     speed = torch.norm(state[..., 2:4], dim=-1)
     mask = torch.bitwise_not(torch.max(torch.isnan(state), dim=-1)[0])
     if nan_to_zero:

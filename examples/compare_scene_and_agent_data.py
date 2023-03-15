@@ -67,16 +67,6 @@ def main(dataset_to_use, hist_sec = 1.0, fut_sec = 2.0, agent_types = [AgentType
     )
     print(f"# Data Samples: {len(dataset_scene):,}")
 
-    dataloader_scene = DataLoader(
-        dataset_scene,
-        batch_size=1, # 1, 2
-        shuffle=False,
-        collate_fn=dataset_scene.get_collate_fn(return_dict=False),
-        num_workers=0,
-    )
-
-
-
     dataset_agent = UnifiedDataset(
         desired_data=[dataset_to_use],
         centric='agent',
@@ -113,9 +103,17 @@ def main(dataset_to_use, hist_sec = 1.0, fut_sec = 2.0, agent_types = [AgentType
     )
     print(f"# Data Samples: {len(dataset_agent):,}")
 
+    dataloader_scene = DataLoader(
+        dataset_scene,
+        batch_size=2, # 1, 2
+        shuffle=False,
+        collate_fn=dataset_scene.get_collate_fn(return_dict=False),
+        num_workers=0,
+    )  
+
     dataloader_agent = DataLoader(
         dataset_agent,
-        batch_size=10, # 10, 12
+        batch_size=12, # 10, 12
         shuffle=False,
         collate_fn=dataset_agent.get_collate_fn(return_dict=False),
         num_workers=0,
@@ -197,6 +195,7 @@ def main(dataset_to_use, hist_sec = 1.0, fut_sec = 2.0, agent_types = [AgentType
         # print("batch_agent['scene_ts']", batch_agent['scene_ts'])
         # print('batch_agent.agent_fut.shape', batch_agent['agent_fut'].shape)
         # print('batch_agent.neigh_fut.shape', batch_agent['neigh_fut'].shape)
+        raise
         
 
 if __name__ == "__main__":

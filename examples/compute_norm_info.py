@@ -316,7 +316,7 @@ if __name__ == "__main__":
     # "scene", "agent"
     centric = "scene"
     # subset of ['ego_fut', 'ego_hist', 'neighbor_hist']
-    keys_to_compute = ['ego_fut', 'ego_hist', 'neighbor_hist']
+    keys_to_compute = ['ego_fut', 'ego_hist']
     hist_sec = 3.0 # 1.0, 3.0, 3.0
     fut_sec = 5.2 # 2.0, 5.2, 14.0
     steps = 50000

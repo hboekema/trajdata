@@ -16,7 +16,7 @@ import os
 def main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_sec = 1.0, fut_sec = 2.0, steps = None, agent_types = [AgentType.VEHICLE]):
     dt = 0.1
 
-    interaction_d = 30 # distance to scene ego to be included. [30, np.inf]
+    interaction_d = 50 # distance to scene ego to be included. [30, 50, np.inf]
     max_agent_num = None # scene-centric
     max_neighbor_num = None # agent-centric
 
@@ -314,7 +314,7 @@ if __name__ == "__main__":
     # 'unified', 'l5kit'
     dataset_loader_to_use = 'unified'
     # "scene", "agent"
-    centric = "agent"
+    centric = "scene"
     # subset of ['ego_fut', 'ego_hist', 'neighbor_hist']
     keys_to_compute = ['ego_fut', 'ego_hist', 'neighbor_hist']
     hist_sec = 3.0 # 1.0, 3.0, 3.0
@@ -322,7 +322,7 @@ if __name__ == "__main__":
     steps = 50000
     agent_types = [AgentType.VEHICLE] # [AgentType.PEDESTRIAN] # [AgentType.VEHICLE]
     
-    # main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_sec, fut_sec, steps=steps, agent_types=agent_types)
+    main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_sec, fut_sec, steps=steps, agent_types=agent_types)
     
-    path = 'examples/traj_data_nusc_trainval_agent_3.0_5.2.npz'
-    compute_info(path, sample_coeff=1.0)
+    # path = 'examples/traj_data_nusc_trainval_agent_3.0_5.2.npz'
+    # compute_info(path, sample_coeff=1.0)

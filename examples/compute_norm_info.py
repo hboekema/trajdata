@@ -145,6 +145,15 @@ def main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_s
             neigh_state = neigh_state[neigh_mask]
             compile_data['neighbor_hist'].append(neigh_state.cpu().numpy())
 
+        if 'neighbor_fut' in compile_data:
+            # neighbor future
+            neigh_fut_pos, _, neigh_fut_speed, neigh_mask = trajdata2posyawspeed(batch.neigh_fut.cuda(), nan_to_zero=False)
+            neigh_lw = batch.neigh_fut_extents[...,:2].cuda()
+            neigh_state = torch.cat((neigh_fut_pos, neigh_fut_speed.unsqueeze(-1), neigh_lw), dim=-1)
+            # only want steps from neighbors that are valid
+            neigh_state = neigh_state[neigh_mask]
+            compile_data['neighbor_fut'].append(neigh_state.cpu().numpy())
+
         if steps is not None and i > steps:
             break
 
@@ -256,7 +265,8 @@ def compute_info(path, sample_coeff=0.25):
     val_labels = {
         'ego_fut' : [    'x',       ' y',       'vel',      'yaw',     'acc',    'yawvel' ],
         'ego_hist' : [    'x',        'y',       'vel',      'len',     'width'    ],
-        'neighbor_hist' : [    'x',        'y',       'vel',      'len',     'width'    ]
+        'neighbor_hist' : [    'x',        'y',       'vel',      'len',     'width'    ],
+        'neighbor_fut': [    'x',        'y',       'vel',      'len',     'width'    ],
     }
     for i, state_name in enumerate(compile_data_npz.files):
         print(state_name)
@@ -314,9 +324,9 @@ if __name__ == "__main__":
     # 'unified', 'l5kit'
     dataset_loader_to_use = 'unified'
     # "scene", "agent"
-    centric = "scene"
+    centric = "agent"
     # subset of ['ego_fut', 'ego_hist', 'neighbor_hist']
-    keys_to_compute = ['ego_fut', 'ego_hist']
+    keys_to_compute = ['ego_fut', 'ego_hist', 'neighbor_hist', 'neighbor_fut']
     hist_sec = 3.0 # 1.0, 3.0, 3.0
     fut_sec = 5.2 # 2.0, 5.2, 14.0
     steps = 50000

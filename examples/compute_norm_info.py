@@ -18,7 +18,7 @@ def main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_s
 
     interaction_d = 50 # distance to scene ego to be included. [30, 50, np.inf]
     max_agent_num = None # scene-centric
-    max_neighbor_num = None # agent-centric
+    max_neighbor_num = 20 # None # agent-centric
 
     if centric == 'scene':
         dataloader_batch_size = 2

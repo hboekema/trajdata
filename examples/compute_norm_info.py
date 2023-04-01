@@ -125,7 +125,7 @@ def main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_s
         traj_state_and_action = convert_state_to_state_and_action(traj_state, curr_speed, dt).reshape((-1, 6))
 
         traj_hist_state = torch.cat(
-                (hist_pos[1:], hist_yaw[1:]), dim=-1)
+                (hist_pos[...,1:,:], hist_yaw[...,1:,:]), dim=-1)
         traj_hist_state_and_action = convert_state_to_state_and_action(traj_hist_state, hist_speed[...,-1], dt).reshape((-1, 6))
 
         if 'ego_fut' in compile_data:
@@ -338,7 +338,7 @@ if __name__ == "__main__":
     steps = 10000
     agent_types = [AgentType.VEHICLE] # [AgentType.PEDESTRIAN] # [AgentType.VEHICLE]
     
-    # main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_sec, fut_sec, steps=steps, agent_types=agent_types)
+    main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_sec, fut_sec, steps=steps, agent_types=agent_types)
     
-    path = 'examples/traj_data_nusc_trainval_agent_3.0_5.2.npz'
-    compute_info(path, sample_coeff=1.0)
+    # path = 'examples/traj_data_nusc_trainval_agent_3.0_5.2.npz'
+    # compute_info(path, sample_coeff=1.0)

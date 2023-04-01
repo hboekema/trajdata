@@ -122,16 +122,22 @@ def main(dataset_to_use, dataset_loader_to_use, centric, keys_to_compute, hist_s
 
         traj_state = torch.cat(
                 (fut_pos, fut_yaw), dim=-1)
-
         traj_state_and_action = convert_state_to_state_and_action(traj_state, curr_speed, dt).reshape((-1, 6))
+
+        traj_hist_state = torch.cat(
+                (hist_pos[1:], hist_yaw[1:]), dim=-1)
+        traj_hist_state_and_action = convert_state_to_state_and_action(traj_hist_state, hist_speed[...,-1], dt).reshape((-1, 6))
 
         if 'ego_fut' in compile_data:
             # B*T x 6 where (x, y, vel, yaw, acc, yawvel)
-            # print(traj_state_and_action.size())
             compile_data['ego_fut'].append(traj_state_and_action.cpu().numpy())
 
+        if 'ego_hist_diff' in compile_data:
+            # B*T x 6 where (x, y, vel, yaw, acc, yawvel)
+            compile_data['ego_hist_diff'].append(traj_hist_state_and_action.cpu().numpy())
+
         if 'ego_hist' in compile_data:
-            # ego history
+            # ego history (x, y, vel, l, w)
             ego_lw = batch.agent_hist_extent[...,:2].cuda()
             ego_hist_state = torch.cat((hist_pos, hist_speed.unsqueeze(-1), ego_lw), dim=-1).reshape((-1, 5))
             compile_data['ego_hist'].append(ego_hist_state.cpu().numpy())
@@ -325,8 +331,8 @@ if __name__ == "__main__":
     dataset_loader_to_use = 'unified'
     # "scene", "agent"
     centric = "agent"
-    # subset of ['ego_fut', 'ego_hist', 'neighbor_hist']
-    keys_to_compute = ['ego_fut', 'ego_hist', 'neighbor_hist', 'neighbor_fut']
+    # subset of ['ego_fut', 'ego_hist_diff', 'ego_hist', 'neighbor_hist', 'neighbor_fut']
+    keys_to_compute = ['ego_fut', 'ego_hist_diff', 'ego_hist', 'neighbor_hist', 'neighbor_fut']
     hist_sec = 3.0 # 1.0, 3.0, 3.0
     fut_sec = 5.2 # 2.0, 5.2, 14.0
     steps = 10000

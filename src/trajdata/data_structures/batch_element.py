@@ -275,7 +275,9 @@ class AgentBatchElement:
         offset_xy: Tuple[float, float] = patch_params.get("offset_frac_xy", (0.0, 0.0))
         return_rgb: bool = patch_params.get("return_rgb", True)
         no_map_fill_val: float = patch_params.get("no_map_fill_value", 0.0)
-
+        # hacky way to deal with np.nan in dataframe
+        if np.isnan(world_x) or np.isnan(world_y) or np.isnan(offset_xy).any():
+            world_x, world_y, offset_xy = 0.0, 0.0, (0.0, 0.0)
         if self.standardize_data:
             heading = self.curr_agent_state_np.heading[0]
             patch_data, raster_from_world_tf, has_data = self.cache.load_map_patch(

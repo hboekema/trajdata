@@ -90,6 +90,13 @@ def calc_stats(
         )
         / dt
     )
+
+    # consider those valid timesteps
+    valid_inds = positions.sum(-1) != 0
+    # consider agents with at least 2 timesteps
+    valid_inds2 = positions[:, 1].sum(-1) != 0
+    valid_inds = valid_inds & valid_inds2.unsqueeze(-1)
+
     velocity_norm: Tensor = torch.linalg.vector_norm(velocity, dim=-1)
 
     accel: Tensor = (
@@ -115,8 +122,8 @@ def calc_stats(
     )
 
     return {
-        "velocity": torch.histogram(velocity_norm, bins["velocity"]),
-        "lon_accel": torch.histogram(lon_acc, bins["lon_accel"]),
-        "lat_accel": torch.histogram(lat_acc, bins["lat_accel"]),
-        "jerk": torch.histogram(jerk, bins["jerk"]),
+        "velocity": torch.histogram(velocity_norm[valid_inds], bins["velocity"]),
+        "lon_accel": torch.histogram(lon_acc[valid_inds], bins["lon_accel"]),
+        "lat_accel": torch.histogram(lat_acc[valid_inds], bins["lat_accel"]),
+        "jerk": torch.histogram(jerk[valid_inds], bins["jerk"]),
     }

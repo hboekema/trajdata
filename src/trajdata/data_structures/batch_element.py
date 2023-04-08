@@ -157,6 +157,8 @@ class AgentBatchElement:
 
         # Will be optionally populated by the user's provided functions.
         self.extras: Dict[str, np.ndarray] = dict()
+        # save agent_info such that user function can also use it
+        self.agent_info = agent_info
 
     def get_agent_history(
         self,
@@ -460,6 +462,8 @@ class SceneBatchElement:
 
         # Will be optionally populated by the user's provided functions.
         self.extras: Dict[str, np.ndarray] = dict()
+        # save nearby_agents such that user function can also use it
+        self.nearby_agents = nearby_agents
 
     def get_nearby_agents(
         self,

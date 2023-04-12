@@ -691,7 +691,7 @@ def agent_collate_fn(
 
     extras: Dict[str, Tensor] = {}
     for key in batch_elems[0].extras.keys():
-        if key == 'closest_lane_point':
+        if key in ['closest_lane_point', 'full_fut_traj', 'full_fut_valid']:
             closest_lane_points_list = [batch_elem.extras[key] for batch_elem in batch_elems]
             extras[key] = pad_sequence(
                 closest_lane_points_list, batch_first=True, padding_value=np.nan
@@ -993,7 +993,7 @@ def scene_collate_fn(
 
     extras: Dict[str, Tensor] = {}
     for key in batch_elems[0].extras.keys():
-        if key == 'closest_lane_point':
+        if key in ['closest_lane_point', 'full_fut_traj', 'full_fut_valid']:
             closest_lane_points_list = [batch_elem.extras[key] for batch_elem in batch_elems]
             extras[key] = pad_sequence(
                 closest_lane_points_list, batch_first=True, padding_value=np.nan

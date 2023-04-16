@@ -270,6 +270,7 @@ def compute_info(path, sample_coeff=0.25):
 
     val_labels = {
         'ego_fut' : [    'x',       ' y',       'vel',      'yaw',     'acc',    'yawvel' ],
+        'ego_hist_diff' : [    'x',       ' y',       'vel',      'yaw',     'acc',    'yawvel' ],
         'ego_hist' : [    'x',        'y',       'vel',      'len',     'width'    ],
         'neighbor_hist' : [    'x',        'y',       'vel',      'len',     'width'    ],
         'neighbor_fut': [    'x',        'y',       'vel',      'len',     'width'    ],

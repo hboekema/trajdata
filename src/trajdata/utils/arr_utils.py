@@ -240,7 +240,7 @@ def transform_xyh_np(xyh: np.ndarray, tf_mat: np.ndarray) -> np.ndarray:
         tf_mat (np.ndarray): shape [...,3,3]
     """
     transformed_xy = transform_coords_np(xyh[..., :2], tf_mat)
-    transformed_angles = transform_angles_np(xyh[..., 3], tf_mat)
+    transformed_angles = transform_angles_np(xyh[..., 2], tf_mat)
     return np.concatenate([transformed_xy, transformed_angles[..., None]], axis=-1)
 
 

@@ -68,7 +68,7 @@ class JerkHistogram(SimStatistic):
 
 
 def calc_stats(
-    positions: Tensor, heading: Tensor, dt: float, bins: Dict[str, Tensor], disable_control_on_stationary=False
+    positions: Tensor, heading: Tensor, dt: float, bins: Dict[str, Tensor], disable_control_on_stationary=False, vec_map=None,
 ) -> Dict[str, Tensor]:
     """Calculate scene statistics for a simulated scene.
 
@@ -101,16 +101,34 @@ def calc_stats(
     valid_mask = valid_mask & valid_mask2.unsqueeze(-1)
 
     if disable_control_on_stationary:
-        if disable_control_on_stationary == 'current_speed':
+        if 'current_speed' in disable_control_on_stationary:
             moving_mask = velocity_norm[:, 0] > 5e-1
             valid_mask = valid_mask & moving_mask.unsqueeze(-1)
-        elif disable_control_on_stationary == 'any_speed':
+        elif 'any_speed' in disable_control_on_stationary:
             moving = velocity_norm > 5e-1
             moving_mask = moving.any(-1)
             valid_mask = valid_mask & moving_mask.unsqueeze(-1)
-        # TBD: support on_lane
-        else:
-            raise NotImplementedError()
+        if 'on_lane' in disable_control_on_stationary:
+            map_max_dist = 2
+            max_heading_error = 0.25*np.pi
+
+            if positions.shape[0] > 0:
+                on_lane_list = []
+                for i in range(positions.shape[0]):
+                    on_lane = False
+                    # only consider valid ones
+                    if positions[0].sum() != 0:
+                        xyzh = np.concatenate([positions[i, 0].numpy(), [0], heading[i, 0].numpy()])
+                        possible_lanes = vec_map.get_current_lane(xyzh, max_dist=map_max_dist, max_heading_error=max_heading_error)
+                        if len(possible_lanes) > 0:
+                            lane_points = possible_lanes[0].center.points
+                            lane_points = np.where(np.isnan(lane_points), np.inf, lane_points)
+                            on_lane = np.min(xyzh - lane_points) < 1.5
+                        
+                    on_lane_list.append(on_lane)
+                on_lane_mask = torch.tensor(on_lane_list, dtype=valid_mask.dtype, device=valid_mask.device)
+                valid_mask = valid_mask & on_lane_mask.unsqueeze(-1)
+
     # print('velocity_norm', velocity_norm.shape, velocity_norm)
     # print('valid_mask', valid_mask.shape, valid_mask)    
 

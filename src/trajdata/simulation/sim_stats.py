@@ -218,12 +218,6 @@ def calc_stats(
         / dt
     )
 
-    # (N, T) -> (N, N, T)
-    valid_mask_expand = valid_mask.unsqueeze(0).expand(N, N, T).reshape(N*N, T)
-    self_mask = torch.eye(N, dtype=valid_mask.dtype, device=valid_mask.device).unsqueeze(-1).expand(N, N, T).reshape(N*N, T)
-    valid_mask_expand = valid_mask_expand & ~self_mask
-
-
     # get norm / absolute value for histogram estimation as sign is not important
     rel_pos_norm: Tensor = torch.linalg.vector_norm(rel_pos, dim=-1)
     rel_lon_pos_abs: Tensor = torch.abs(rel_pos[..., 0])
@@ -234,6 +228,23 @@ def calc_stats(
 
     rel_vel_norm: Tensor = torch.linalg.vector_norm(rel_vel, dim=-1)
     rel_accel_norm: Tensor = torch.linalg.vector_norm(rel_accel, dim=-1)
+
+    rel_jerk: Tensor = (
+        torch.diff(
+            rel_accel_norm,
+            dim=1,
+            prepend=rel_accel_norm[..., [0]] - (rel_accel_norm[..., [1]] - rel_accel_norm[..., [0]]),
+        )
+        / dt
+    )
+
+    # (N, T) -> (N, N, T)
+    valid_mask_expand = valid_mask.unsqueeze(0).expand(N, N, T).reshape(N*N, T)
+    self_mask = torch.eye(N, dtype=valid_mask.dtype, device=valid_mask.device).unsqueeze(-1).expand(N, N, T).reshape(N*N, T)
+    valid_mask_expand = valid_mask_expand & ~self_mask
+
+
+    
 
 
     return {
@@ -257,5 +268,7 @@ def calc_stats(
         "rel_accel_norm": torch.histogram(rel_accel_norm[valid_mask_expand], bins["rel_accel_norm"]),
         "rel_lon_accel": torch.histogram(rel_accel[..., 0][valid_mask_expand], bins["rel_lon_accel"]),
         "rel_lat_accel": torch.histogram(rel_accel[..., 1][valid_mask_expand], bins["rel_lat_accel"]),
+
+        "rel_jerk": torch.histogram(rel_jerk[valid_mask_expand], bins["rel_jerk"]),
 
     }

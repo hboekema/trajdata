@@ -6,7 +6,8 @@ import torch
 from torch import Tensor
 
 from trajdata.utils import arr_utils
-
+from tbsim.utils.geometry_utils import transform_agents_to_world
+from tbsim.models.diffuser_helpers import angle_wrap_torch
 
 class SimStatistic:
     def __init__(self, name: str) -> None:
@@ -154,9 +155,107 @@ def calc_stats(
         / dt
     )
 
+
+    # multi-agents relative info estimation
+    N, T, _ = positions.shape
+
+    # (N2*N1*T, 1)
+    yaw_expand = heading.unsqueeze(0).expand(N, N, T, 1).reshape(-1)
+    # (N2*N1*T, 2)
+    pos_expand = positions.unsqueeze(0).expand(N, N, T, 2).reshape(-1, 2)
+
+    # (N, T, 1) -> (N, 1, T, 1) -> (N1, N2, T, 1) -> (N1*N2*T, 1)
+    yaw_ = heading.unsqueeze(1).expand(N, N, T, 1).reshape(-1)
+    # (N, T, 2) -> (N, 1, T, 2) -> (N1, N2, T, 2) -> (N1*N2*T, 2)
+    positions_ = positions.unsqueeze(1).expand(N, N, T, 2).reshape(-1, 2)
+
+    # (N1*N2*T, 3, 3)
+    cos_agent, sin_agent = torch.cos(yaw_), torch.sin(yaw_)
+    world_from_agent_per_time = torch.stack(
+        [
+            torch.stack([cos_agent, -sin_agent, positions_[..., 0]], dim=-1),
+            torch.stack([sin_agent, cos_agent, positions_[..., 1]], dim=-1),
+            torch.stack([0.0*torch.ones_like(yaw_),
+                0.0*torch.ones_like(yaw_), 
+                1.0*torch.ones_like(yaw_)], dim=-1),
+        ], dim=-2
+    )
+    agent_per_time_from_world = torch.linalg.inv(world_from_agent_per_time)
+    
+    # transform coord (N1*N2*T, 2)
+    rel_pos = torch.einsum("...jk,...k->...j", agent_per_time_from_world[..., :-1, :-1], pos_expand)
+    rel_pos += agent_per_time_from_world[..., :-1, -1]
+    # (N1*N2*T, 2) -> (N1*N2, T, 2)
+    rel_pos = rel_pos.reshape(N*N, T, 2)
+
+    # transform angle
+    rel_yaw = angle_wrap_torch(yaw_expand - yaw_).reshape(N*N, T, 1)
+        
+    rel_vel: Tensor = (
+        torch.diff(
+            rel_pos,
+            dim=1,
+            prepend=rel_pos[..., [0], :] - (rel_pos[..., [1], :] - rel_pos[..., [0], :]),
+        )
+        / dt
+    )
+
+    rel_yaw_vel: Tensor = (
+        torch.diff(
+            rel_yaw,
+            dim=1,
+            prepend=rel_yaw[..., [0], :] - (rel_yaw[..., [1], :] - rel_yaw[..., [0], :]),
+        )
+        / dt
+    )
+
+    rel_accel: Tensor = (
+        torch.diff(
+            rel_vel,
+            dim=1,
+            prepend=rel_vel[..., [0], :] - (rel_vel[..., [1], :] - rel_vel[..., [0], :]),
+        )
+        / dt
+    )
+
+    # (N, T) -> (N, N, T)
+    valid_mask_expand = valid_mask.unsqueeze(0).expand(N, N, T).reshape(N*N, T)
+    self_mask = torch.eye(N, dtype=valid_mask.dtype, device=valid_mask.device).unsqueeze(-1).expand(N, N, T).reshape(N*N, T)
+    valid_mask_expand = valid_mask_expand & ~self_mask
+
+
+    # get norm / absolute value for histogram estimation as sign is not important
+    rel_pos_norm: Tensor = torch.linalg.vector_norm(rel_pos, dim=-1)
+    rel_lon_pos_abs: Tensor = torch.abs(rel_pos[..., 0])
+    rel_lat_pos_abs: Tensor = torch.abs(rel_pos[..., 1])
+
+    rel_yaw_abs: Tensor = torch.abs(rel_yaw)
+    rel_yaw_vel_abs: Tensor = torch.abs(rel_yaw_vel)
+
+    rel_vel_norm: Tensor = torch.linalg.vector_norm(rel_vel, dim=-1)
+    rel_accel_norm: Tensor = torch.linalg.vector_norm(rel_accel, dim=-1)
+
+
     return {
         "velocity": torch.histogram(velocity_norm[valid_mask], bins["velocity"]),
         "lon_accel": torch.histogram(lon_acc[valid_mask], bins["lon_accel"]),
         "lat_accel": torch.histogram(lat_acc[valid_mask], bins["lat_accel"]),
         "jerk": torch.histogram(jerk[valid_mask], bins["jerk"]),
+
+
+        "rel_pos_norm": torch.histogram(rel_pos_norm[valid_mask_expand], bins["rel_pos_norm"]),
+        "rel_lon_pos_abs": torch.histogram(rel_lon_pos_abs[valid_mask_expand], bins["rel_lon_pos_abs"]),
+        "rel_lat_pos": torch.histogram(rel_lat_pos_abs[valid_mask_expand], bins["rel_lat_pos_abs"]),
+
+        "rel_yaw_abs": torch.histogram(rel_yaw_abs[valid_mask_expand], bins["rel_yaw_abs"]),
+        "rel_yaw_vel_abs": torch.histogram(rel_yaw_vel_abs[valid_mask_expand], bins["rel_yaw_vel_abs"]),
+
+        "rel_vel_norm": torch.histogram(rel_vel_norm[valid_mask_expand], bins["rel_vel_norm"]),
+        "rel_lon_vel": torch.histogram(rel_vel[..., 0][valid_mask_expand], bins["rel_lon_vel"]),
+        "rel_lat_vel": torch.histogram(rel_vel[..., 1][valid_mask_expand], bins["rel_lat_vel"]),
+
+        "rel_accel_norm": torch.histogram(rel_accel_norm[valid_mask_expand], bins["rel_accel_norm"]),
+        "rel_lon_accel": torch.histogram(rel_accel[..., 0][valid_mask_expand], bins["rel_lon_accel"]),
+        "rel_lat_accel": torch.histogram(rel_accel[..., 1][valid_mask_expand], bins["rel_lat_accel"]),
+
     }

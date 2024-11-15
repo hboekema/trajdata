@@ -19,6 +19,14 @@ except ModuleNotFoundError:
 
 
 try:
+    from trajdata.dataset_specific.vod import VODDataset
+except ModuleNotFoundError:
+    # This can happen if the user did not install trajdata
+    # with the "trajdata[vod]" option.
+    pass
+
+
+try:
     from trajdata.dataset_specific.nuplan import NuplanDataset
 except ModuleNotFoundError:
     # This can happen if the user did not install trajdata
@@ -29,6 +37,9 @@ except ModuleNotFoundError:
 def get_raw_dataset(dataset_name: str, data_dir: str) -> RawDataset:
     if "nusc" in dataset_name:
         return NuscDataset(dataset_name, data_dir, parallelizable=False, has_maps=True)
+
+    if "vod" in dataset_name:
+        return VODDataset(dataset_name, data_dir, parallelizable=True, has_maps=True)
 
     if "lyft" in dataset_name:
         return LyftDataset(dataset_name, data_dir, parallelizable=True, has_maps=True)

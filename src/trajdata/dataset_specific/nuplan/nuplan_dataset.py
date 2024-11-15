@@ -323,10 +323,15 @@ class NuplanDataset(RawDataset):
 
         ### Calculating agent accelerations
         agent_ids: np.ndarray = agents_df.index.get_level_values(0).to_numpy()
-        agents_df[["ax", "ay"]] = (
-            arr_utils.agent_aware_diff(agents_df[["vx", "vy"]].to_numpy(), agent_ids)
-            / nuplan_utils.NUPLAN_DT
-        )
+        if len(agent_ids) > 0:
+            agents_df[["ax", "ay"]] = (
+                arr_utils.agent_aware_diff(
+                    agents_df[["vx", "vy"]].to_numpy(), agent_ids
+                )
+                / nuplan_utils.NUPLAN_DT
+            )
+        else:
+            agents_df[["ax", "ay"]] = agents_df[["vx", "vy"]]
 
         # for agent_id, frames in agents_df.groupby("agent_id")["scene_ts"]:
         #     if frames.shape[0] <= 1:
@@ -348,7 +353,7 @@ class NuplanDataset(RawDataset):
             {lpc_token: scene_ts for scene_ts, lpc_token in enumerate(lpc_tokens)}
         )
         tls_df = tls_df.drop(columns=["lidar_pc_token"]).set_index(
-            ["lane_connector_id", "scene_ts"]
+            ["lane_id", "scene_ts"]
         )
 
         cache_class.save_traffic_light_data(tls_df, cache_path, scene)

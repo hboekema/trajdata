@@ -174,13 +174,14 @@ class NuPlanObject:
     ) -> pd.DataFrame:
         query = f"""
         SELECT  tls.lidar_pc_token AS lidar_pc_token,
-                tls.lane_connector_id AS lane_connector_id,
+                tls.lane_connector_id AS lane_id,
                 tls.status AS raw_status
         FROM traffic_light_status AS tls 
         WHERE lidar_pc_token IN ({('?,'*len(binary_lpc_tokens))[:-1]});
         """
         df = pd.read_sql_query(query, self.connection, params=binary_lpc_tokens)
         df["status"] = df["raw_status"].map(NUPLAN_TRAFFIC_STATUS_DICT)
+        df["lane_id"] = df["lane_id"].astype(str)
         return df.drop(columns=["raw_status"])
 
     def close_db(self) -> None:

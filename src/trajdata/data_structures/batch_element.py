@@ -149,7 +149,13 @@ class AgentBatchElement:
         if map_api is not None:
             self.vec_map = map_api.get_map(
                 map_name,
-                self.cache if self.cache.is_traffic_light_data_cached() else None,
+                self.cache
+                if self.cache.is_traffic_light_data_cached(
+                    # Is the original dt cached? If so, we can continue by
+                    # interpolating time to get whatever the user desires.
+                    self.cache.scene.env_metadata.dt
+                )
+                else None,
                 **vector_map_params if vector_map_params is not None else None,
             )
 
@@ -443,8 +449,6 @@ class SceneBatchElement:
                 **vector_map_params if vector_map_params is not None else None,
             )
 
-        self.scene_id = scene_time.scene.name
-
         ### ROBOT DATA ###
         self.robot_future_np: Optional[StateArray] = None
 
@@ -511,7 +515,6 @@ class SceneBatchElement:
         future_sec: Tuple[Optional[float], Optional[float]],
         nearby_agents: List[AgentMetadata],
     ) -> Tuple[List[StateArray], List[np.ndarray], np.ndarray]:
-
         (
             agent_futures,
             agent_future_extents,

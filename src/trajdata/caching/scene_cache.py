@@ -167,8 +167,8 @@ class SceneCache:
         raise NotImplementedError()
 
     def get_traffic_light_status_dict(
-        self,
-    ) -> Dict[Tuple[int, int], TrafficLightStatus]:
+        self, desired_dt: Optional[float] = None
+    ) -> Dict[Tuple[str, int], TrafficLightStatus]:
         """Returns lookup table for traffic light status in the current scene
         lane_id, scene_ts -> TrafficLightStatus"""
         raise NotImplementedError()

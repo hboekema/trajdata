@@ -248,6 +248,10 @@ class VODDataset(RawDataset):
                 if agent_info["instance_token"] in existing_agents:
                     continue
 
+                if agent_info["category_name"] == "vehicle.ego":
+                    # Do not double-count the ego vehicle
+                    continue
+
                 if not agent_info["next"]:
                     # There are some agents with only a single detection to them, we don't care about these.
                     continue
